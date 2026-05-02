@@ -22,8 +22,7 @@ title: Tekore
 lang: pt-BR
 google_analytics: G-D83V8EENTB
 email: contact@tekore.com
-description: >- # this means to ignore newlines until "baseurl:"
-  Produzido e mantido por Anderson Gusmão. 
+description: "By Anderson Gusmão"
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://www.tekore.com.br"
 github_username: anderson-gusmao
