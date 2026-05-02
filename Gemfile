@@ -6,6 +6,9 @@ gem "github-pages", group: :jekyll_plugins
 # Tema padrão
 gem "minima", "~> 2.5"
 
+# Necessário para Ruby 3.0+
+gem "webrick", "~> 1.7"
+
 # Dependências para Windows (ignoradas em outros sistemas)
 platforms :mingw, :x64_mingw, :mswin, :jruby do
   gem "tzinfo", ">= 1", "< 3"
