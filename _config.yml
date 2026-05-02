@@ -55,3 +55,15 @@ plugins:
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+
+defaults:
+  - scope:
+      path: "_posts/en"
+    values:
+      lang: "en"
+      permalink: "/en/:categories/:year/:month/:day/:title/"
+  - scope:
+      path: "en"
+      type: "pages"
+    values:
+      lang: "en"

@@ -8,4 +8,13 @@
   {%- if jekyll.environment == "production" and site.google_analytics -%}
     {%- include google-analytics.html -%}
   {%- endif -%}
+  <script>
+    // Redirecionamento automático baseado no idioma do navegador
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      var userLang = navigator.language || navigator.userLanguage;
+      if (!userLang.toLowerCase().startsWith('pt')) {
+        window.location.href = '/en/';
+      }
+    }
+  </script>
 </head>

@@ -3,6 +3,7 @@ layout: post
 title:  "Como o computador descobre o que carregar ao ser ligado?"
 date:   2026-05-01 18:53:56 -0300
 categories: operating-system
+lang: pt-br
 ---
 **Neste artigo, exploramos o processo técnico de inicialização de um computador, detalhando o carregamento do Master Boot Record (MBR), a estrutura de setores de um disco e a implementação de um bootloader em Assembly com foco na validação da assinatura de boot.**
 
