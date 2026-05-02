@@ -27,7 +27,11 @@ layout: default
       {%- endfor -%}
     </ul>
 
-    <p class="rss-subscribe">assinar <a href="{{ "/feed.xml" | relative_url }}">via RSS</a></p>
+    <p class="rss-subscribe">
+      <a href="{{ "/feed.xml" | relative_url }}" title="Assinar via RSS">
+        <img src="{{ "/assets/images/rss-icon.png" | relative_url }}" alt="RSS Feed" style="width: 24px; height: 24px; vertical-align: middle;">
+      </a>
+    </p>
   {%- endif -%}
 
 </div>
