@@ -1,0 +1,47 @@
+--- 
+--- 
+
+@import "minima";
+
+// Custom styles
+.warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  background: #fff8e1;
+  /* amarelo bem suave */
+  border: 1px solid #ffe082;
+  border-left: 6px solid #f4b400 !important;
+
+  padding: 16px 18px;
+  margin: 24px 0;
+
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #856404;
+}
+
+/* Remove estilo padrão do blockquote do tema Minima */
+blockquote.warning {
+  border-left: 6px solid #f4b400;
+  font-style: normal;
+}
+
+.warning p {
+  margin: 0;
+}
+
+.highlight .lineno {
+  color: #999;
+  padding-right: 10px;
+  user-select: none;
+}
+
+.highlight {
+  border-radius: 6px;
+  overflow-x: auto;
+}
