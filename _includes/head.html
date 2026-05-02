@@ -12,7 +12,10 @@
     // Redirecionamento automático baseado no idioma do navegador
     if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
       var userLang = navigator.language || navigator.userLanguage;
-      if (!userLang.toLowerCase().startsWith('pt')) {
+      userLang = userLang.toLowerCase();
+      if (userLang.startsWith('fr')) {
+        window.location.href = '/fr/';
+      } else if (!userLang.startsWith('pt')) {
         window.location.href = '/en/';
       }
     }

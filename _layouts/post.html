@@ -10,6 +10,8 @@ layout: default
         {%- assign current_lang = page.lang | default: site.lang | default: "pt-br" | downcase -%}
         {%- if current_lang == "en" -%}
           {{ page.date | date: "%b %-d, %Y" }}
+        {%- elsif current_lang == "fr" -%}
+          {%- include date_fr.html date=page.date -%}
         {%- else -%}
           {%- include date_pt.html date=page.date -%}
         {%- endif -%}

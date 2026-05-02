@@ -20,6 +20,8 @@ layout: default
           <span class="post-meta">
             {%- if current_lang == "en" -%}
               {{ post.date | date: "%b %-d, %Y" }}
+            {%- elsif current_lang == "fr" -%}
+              {%- include date_fr.html date=post.date -%}
             {%- else -%}
               {%- include date_pt.html date=post.date -%}
             {%- endif -%}
@@ -40,6 +42,10 @@ layout: default
     <p class="rss-subscribe">
       {%- if current_lang == "en" -%}
       <a href="{{ "/en/feed.xml" | relative_url }}" title="Subscribe via RSS">
+        <img src="{{ "/assets/images/rss-icon.png" | relative_url }}" alt="RSS Feed" style="width: 24px; height: 24px; vertical-align: middle;">
+      </a>
+      {%- elsif current_lang == "fr" -%}
+      <a href="{{ "/fr/feed.xml" | relative_url }}" title="S'abonner via RSS">
         <img src="{{ "/assets/images/rss-icon.png" | relative_url }}" alt="RSS Feed" style="width: 24px; height: 24px; vertical-align: middle;">
       </a>
       {%- else -%}

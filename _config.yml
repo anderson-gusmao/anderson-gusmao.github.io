@@ -66,3 +66,13 @@ defaults:
       type: "pages"
     values:
       lang: "en"
+  - scope:
+      path: "_posts/fr"
+    values:
+      lang: "fr"
+      permalink: "/fr/:categories/:year/:month/:day/:title/"
+  - scope:
+      path: "fr"
+      type: "pages"
+    values:
+      lang: "fr"
