@@ -4,29 +4,32 @@ title:  "Como o computador descobre o que carregar ao ser ligado?"
 date:   2026-05-01 18:53:56 -0300
 categories: operating-system
 ---
+**Neste artigo, exploramos o processo técnico de inicialização de um computador, detalhando o carregamento do Master Boot Record (MBR), a estrutura de setores de um disco e a implementação de um bootloader em Assembly com foco na validação da assinatura de boot.**
+
 # Carregamento do bootloader
 
-Ao ser ligado, o computador inicia o processo de inicialização com um `Power-On Self Test (POST)`. Concluído o teste com sucesso, o sistema busca por um disco inicializável. Se inserido, o primeiro setor (os **512 bytes iniciais, conhecido como setor de inicialização ou MBR**) é carregado na memória. O computador verifica a integridade desse setor procurando pela "**assinatura mágica**" de `0xAA55` nos seus dois últimos bytes; se presente, o código é executado e o processo de boot continua.
+Ao ser ligado, o hardware executa o `Power-On Self Test (POST)`. Após a validação dos componentes, a BIOS busca por dispositivos de armazenamento inicializáveis. O primeiro setor físico (os **512 bytes iniciais, conhecido como setor de inicialização ou MBR**) é carregado na memória RAM. A BIOS valida a integridade deste setor procurando pela "**assinatura mágica**" `0xAA55` em seus dois últimos bytes; se presente, a execução é transferida para este endereço e o processo de boot prossegue.
 
-> ⚠️ **Atenção:** Criado em 1983, o **MBR (Master Boot Record)** foi amplamente utilizado por décadas, mas hoje é considerado obsoleto. Seu substituto é o **GPT (GUID Partition Table)**, que oferece suporte a discos maiores. Para efeitos didáticos iremos utilizar o MBR neste texto.
+> ⚠️ **Nota Técnica:** Introduzido em 1983, o **MBR (Master Boot Record)** foi o padrão dominante por décadas. Atualmente, sistemas modernos utilizam o **GPT (GUID Partition Table)**, que supera as limitações de particionamento e tamanho de disco do MBR. Para fins didáticos, utilizaremos o modelo MBR neste artigo.
 {: .warning}
 
 ![Carregamento do setor de inicialização](/assets/images/boot-sector-loading-ptbr.png)
 
-# Setor? Que parada é essa?
+# Geometria de Disco e Setores
 
-Vou usar um HD **“velha guarda”** apenas para fins de exemplo 😂. Observe que há uma estrutura de organização bem definida com setores, faixas e cabeças dentro do disco rígido.
+Para fins de compreensão da organização de dados, considere a estrutura de um Disco Rígido (HDD) convencional. O disco é organizado de forma hierárquica em setores, trilhas (tracks) e cabeças (heads).
 
 ![Setores de um HD](/assets/images/disk-sector-tracks-ptbr.png)
 
-O **MBR (Master Boot Record)**, ou Registro Mestre de Inicialização, neste contexto corresponde ao **primeiro setor** do disco rígido. Como mencionado anteriormente, ele possui **512 bytes** e é justamente nesse espaço que definimos o **primeiro estágio de carregamento do sistema operacional**.
+O **MBR (Master Boot Record)** localiza-se no **primeiro setor** físico do disco. Este setor possui exatamente **512 bytes** de capacidade, espaço onde é definido o **primeiro estágio (Stage 1)** do carregador de inicialização do sistema operacional.
 
-# O código, por favor.
-Usualmente, um bootloader é escrito em **Assembly**, por ser uma linguagem de baixo nível que permite controle total sobre o hardware. Veja abaixo um exemplo:
+# Implementação do Setor de Boot
+
+O desenvolvimento de um bootloader é tipicamente realizado em **Assembly**, garantindo controle direto sobre o hardware e o mapeamento de memória. Abaixo, apresentamos um exemplo de implementação:
 
 {% highlight assembly linenos%}
 # ***********************************************************
-# Setor de Boot de Exemplo do sistema operacional de exemplo.
+# Setor de Boot de Exemplo
 # ***********************************************************
 
 .code16
@@ -36,80 +39,73 @@ Usualmente, um bootloader é escrito em **Assembly**, por ser uma linguagem de b
 
 LOAD_SEGMENT = 0x1000                     # O carregador de 2º estágio será carregado no segmento 1000h
 FAT_SEGMENT  = 0x0ee0                     # A FAT do disco de boot será carregada no segmento 0x0ee0 
-                                          # (9*512 bytes abaixo do carregador de 2º estágio, pois a FAT
-                                          # consiste em 9 segmentos de 512 bytes).
+                                          # (9*512 bytes abaixo do carregador de 2º estágio)
 
 .global main
 
 main:
     jmp short start                       # Salta para o início do código
-    nop                                   # Os dados do setor de boot começam no byte 3, por isso o nop
+    nop                                   # Alinhamento (nop) para o cabeçalho do setor de boot
 
 .include "bootsector.s"
 .include "macros.s"
 
 start:
-  mInitSegments                           # Inicializa os segmentos de memória usados por este programa
-  mResetDiskSystem                        # Reinicia o sistema de disco
-  mWriteString loadmsg                    # Exibe "loading..."
-  mFindFile filename, LOAD_SEGMENT        # Procura o arquivo de 2º estágio no diretório raiz
+  mInitSegments                           # Inicializa os segmentos de memória
+  mResetDiskSystem                        # Reinicia o subsistema de disco
+  mWriteString loadmsg                    # Exibe mensagem de carregamento
+  mFindFile filename, LOAD_SEGMENT        # Localiza o arquivo de 2º estágio no diretório raiz
   mReadFAT FAT_SEGMENT                    # Carrega a tabela FAT na memória
-  mReadFile LOAD_SEGMENT, FAT_SEGMENT     # Lê o arquivo de 2º estágio para a memória
-  mStartSecondStage                       # Executa o arquivo de 2º estágio
+  mReadFile LOAD_SEGMENT, FAT_SEGMENT     # Transfere o 2º estágio para a memória RAM
+  mStartSecondStage                       # Transfere o fluxo de execução para o 2º estágio
  
-# Falha no boot devido a erro de disco, informa o usuário e reinicia.
-
+# Rotina de tratamento de falhas no processo de boot
 bootFailure:
-  mWriteString diskerror                  # Mostra "Erro de disco, pressione uma tecla para reiniciar"
-  mReboot                                 # Reinicia
+  mWriteString diskerror                  # Exibe mensagem de erro de disco
+  mReboot                                 # Solicita reinicialização do sistema
   
 .include "functions.s"
     
-# Dados utilizados pelo programa
+# Definição de dados e constantes
 filename:    .asciz "2NDSTAGEBIN"
 rebootmsg:   .asciz "Pressione qualquer tecla para reiniciar.\r\n"
 diskerror:   .asciz "Erro de disco. "
 loadmsg:     .asciz "Carregando DevOS...\r\n"
 
-root_strt:   .byte 0,0      # Armazena o offset do diretório raiz no disco
-root_scts:   .byte 0,0      # Armazena o número de setores do diretório raiz
-file_strt:   .byte 0,0      # Armazena o offset do bootloader no disco
+root_strt:   .byte 0,0      # Offset do diretório raiz
+root_scts:   .byte 0,0      # Quantidade de setores do diretório raiz
+file_strt:   .byte 0,0      # Offset do bootloader no disco
 
-.fill (510-(.-main)), 1, 0  # Preenche com zeros até 510 bytes (excluindo a assinatura de boot)
-BootMagic:  .int 0xAA55     # Palavra mágica para a BIOS
+.fill (510-(.-main)), 1, 0  # Padding com zeros até o byte 510
+BootMagic:  .int 0xAA55     # Assinatura mágica para reconhecimento pela BIOS
 {% endhighlight %}
 
-# Decifrando o código.
-Tem muita coisa acontecendo por aqui 😳, mas o que nos interessa agora são as linhas 51 e 52.
+# Análise Técnica e Assinatura de Boot
 
-Lembra da **“assinatura mágica”** **0xAA55**? É exatamente disso que essas linhas tratam.
-O arquivo contém uma série de instruções e dados que formarão o setor de boot. Esse setor precisa ter exatamente 512 bytes, que é o tamanho padrão de um setor de disco.
+A implementação utiliza diretivas específicas para garantir a conformidade com o padrão MBR. O ponto crítico reside no preenchimento do setor para atingir o tamanho exato de 512 bytes (linhas 49 e 50).
 
-Como o conteúdo do código pode variar de tamanho, é necessário calcular dinamicamente quantos bytes de preenchimento (zeros) devem ser adicionados para completar os 512 bytes. 
-
-É aí que entra a expressão:
+Como o volume de instruções e dados pode variar, é necessário calcular dinamicamente o preenchimento (padding) necessário. A expressão utilizada é:
 `(510 - (.-main))`
 
-Ela funciona assim:
+Componentes da expressão:
+*   `.` (ponto): Representa o contador de localização atual (location counter).
+*   `main`: O endereço do ponto de entrada inicial.
+*   `(.-main)`: Calcula o deslocamento (offset) total de bytes gerados até o momento.
+*   `510 - (.-main)`: Determina quantos bytes restam para atingir a marca de 510 bytes.
 
-*   `.` representa a posição atual no código (ou seja, o tamanho já gerado até aquele ponto).
-*   `main` é o ponto inicial do programa.
-*   `(.-main)` calcula o tamanho atual do código.
-*   `510 - (.-main)` define quantos bytes faltam para atingir 510 bytes.
+Os dois bytes finais (511 e 512) são reservados para a assinatura **0xAA55**. Sem esta assinatura, a BIOS não reconhecerá o dispositivo como inicializável.
 
-Esses 510 bytes são usados porque os últimos 2 bytes (511 e 512) são reservados para a assinatura mágica `0xAA55`, exigida pela BIOS para reconhecer o setor como inicializável.
+# Geração do Binário e Carregamento na RAM
 
-# O que acontece quando essas instruções e dados se tornam um arquivo binário?
-
-O código de exemplo acima, quando compilado, torna-se um arquivo binário como o mostrado abaixo. Por convenção, quando o computador (BIOS) reconhece um dispositivo de boot, ele lê o **primeiro setor** (512 bytes), copia o conteúdo para o endereço de memória `0x7C00` e, em seguida, o bootloader é executado.
+Após a montagem do código fonte, é gerado um arquivo binário. Quando o computador identifica um dispositivo de boot, a BIOS lê o primeiro setor (512 bytes), copia seu conteúdo para o endereço físico de memória **0x7C00** e inicia a execução das instruções a partir desse endereço.
 
 ![Arquivo binário em hexadecimal](/assets/images/bootfile-ptbr.png)
 
-# O que acontece depois?
+# Próximas Etapas e Conclusão
 
-Pretendo escrever um artigo de continuação detalhando as próximas fases. Um sistema operacional é formado por várias etapas de boot, cada uma com suas responsabilidades. Este primeiro estágio é responsável por carregar o restante do sistema na memória RAM, processo que está descrito a partir da linha 24 do nosso código de exemplo.
+A inicialização de um sistema operacional é um processo multi-estágio. O código analisado representa o **Estágio 1**, cuja função primordial é localizar e carregar o estágio subsequente na memória RAM, conforme demonstrado na lógica a partir da linha 23.
 
-Até breve, com a continuidade dessas etapas!
+Em artigos futuros, detalharemos as fases posteriores, incluindo a transição para o Modo Protegido e o carregamento do Kernel do sistema.
 
 
 
