@@ -24,7 +24,7 @@ email: contact@tekore.com
 description: >- # this means to ignore newlines until "baseurl:"
   Produzido e mantido por Anderson Gusmão. 
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "tekore.com.br"
+url: "https://tekore.com.br"
 github_username: anderson-gusmao
 
 # Build settings
